@@ -1,4 +1,6 @@
-Here’s a detailed README for your application in English, which you can use for your GitHub repository:
+Here’s an updated version of your README with the additional sections for deployment information and demo images:
+
+---
 
 # Shopee Comments CSV Exporter
 
@@ -11,9 +13,29 @@ The **Shopee Comments CSV Exporter** application allows you to crawl product com
 - **Download CSV file**: After the data is exported, you can download the CSV file directly.
 - **Automatic file deletion**: CSV files are automatically deleted after 5 minutes to free up storage space.
 
+## Deployment
+
+The application is deployed and available for use at the following URL:
+
+[https://shopee-comments-csv-exporter.onrender.com/](https://shopee-comments-csv-exporter.onrender.com/)
+
+You can use the deployed version to crawl product comments from Shopee and export them as CSV files directly from your browser.
+
+## Demo
+
+Here are a screenshot demonstrating the usage of the application:
+
+![Home page](screenshots\home-page.png)
+
+The home page of the Shopee Comments CSV Exporter features a simple interface with:
+
+- URL input: Users can paste a Shopee product URL.
+- Crawl button: Initiates the comment extraction.
+- Download button: Allows users to download the CSV file of the extracted comments.
+
 ## Installation
 
-Follow the steps below to install and use the application.
+Follow the steps below to install and use the application locally.
 
 ### 1. Clone the repository
 
@@ -90,14 +112,17 @@ http://localhost:3000/api/v1/crawl/download/{fileId}
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-```
+
+---
 
 ### Key Sections:
 
 1. **Introduction**: Explains the purpose of the app.
 2. **Features**: Lists the main features, like crawling Shopee comments and exporting them as CSV.
-3. **Installation**: Provides installation steps for setting up the project locally.
-4. **API**: Describes the endpoints and usage for crawling and downloading comments.
-5. **Technologies Used**: Lists key libraries and tools used in the project.
-6. **License**: If applicable, includes the license for the project.
-```
+3. **Deployment**: Provides the link to the deployed application.
+4. **Demo**: Includes images demonstrating the app’s usage.
+5. **Installation**: Provides installation steps for setting up the project locally.
+6. **API**: Describes the endpoints and usage for crawling and downloading comments.
+7. **Technologies Used**: Lists key libraries and tools used in the project.
+8. **License**: If applicable, includes the license for the project.
+
