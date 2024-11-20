@@ -25,7 +25,7 @@ You can use the deployed version to crawl product comments from Shopee and expor
 
 Here are a screenshot demonstrating the usage of the application:
 
-![Home page](screenshots\home-page.png)
+![Home page](screenshots/home-page.png)
 
 The home page of the Shopee Comments CSV Exporter features a simple interface with:
 
