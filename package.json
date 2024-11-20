@@ -4,7 +4,9 @@
   "main": "src/app.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "ts-node-dev src/app.ts --respawn --transpile-only"
+    "dev": "ts-node-dev src/app.ts --respawn --transpile-only",
+    "start": "node dist/app.js",
+    "build": "tsc"
   },
   "author": "",
   "license": "ISC",
