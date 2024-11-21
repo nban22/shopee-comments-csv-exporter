@@ -1,7 +1,3 @@
-Here’s an updated version of your README with the additional sections for deployment information and demo images:
-
----
-
 # Shopee Comments CSV Exporter
 
 The **Shopee Comments CSV Exporter** application allows you to crawl product comments from Shopee using a product URL and export the data as a CSV file for analysis or other purposes.
