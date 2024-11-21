@@ -103,7 +103,7 @@
                 <a id="downloadLink" class="btn btn-success w-100">📥 Download CSV File</a>
             </div>
             <div id="note-response" class="mt-3" style="display: none">
-                <small class="text-muted mt-3">
+                <small class="text-muted mt-3" id="note-text">
                     Note: After crawled successfully, your file will be available for download for
                     60 seconds.
                 </small>
@@ -120,6 +120,10 @@
             const downloadLink = document.getElementById("downloadLink");
             const noteResponse = document.getElementById("note-response");
             const crawlButton = document.getElementById("crawlButton");
+            const noteText = document.getElementById("note-text");
+
+            let timer = 60;
+            let interval = null;
 
             form.addEventListener("submit", async (e) => {
                 e.preventDefault();
@@ -143,10 +147,21 @@
                         downloadLink.href = data.data.fileUrl;
                         responseBox.style.display = "block";
                         noteResponse.style.display = "block";
+                        downloadLink.style.display = "block";
+                        clearInterval(interval);
+                        timer = 60;
+                        interval = setInterval(() => {
+                            if (timer === 0) {
+                                clearInterval(interval);
+                            }
+                            noteText.innerHTML = `Note: After crawled successfully, your file will be available for download for ${timer} seconds.`;
+                            timer--;
+                        }, 1000)
                         alert(data.message);
                     } else {
                         responseBox.style.display = "none";
                         noteResponse.style.display = "none";
+                        clearInterval(interval);
                         alert("Error: " + data.message);
                     }
                 } catch (error) {
@@ -183,6 +198,9 @@
                         document.body.appendChild(a);
                         a.click();
                         window.URL.revokeObjectURL(url);
+                        clearInterval(interval);
+                        noteText.innerHTML = `Note: Your file has been downloaded successfully.`;
+                        downloadLink.style.display = "none";
                     })
                     .catch((error) => {
                         // Show an alert if there's an error
