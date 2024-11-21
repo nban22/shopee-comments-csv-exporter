@@ -33,7 +33,7 @@ export const crawlAndSaveComments = catchAsync(
         let offset = 0;
 
         let data = await commentsFectched(limit, offset, shopId, itemId);
- 
+
         const totalComments = data?.data?.item_rating_summary?.rating_total;
         if (!totalComments) {
             return next(new AppError(400, "No comments found"));
@@ -48,7 +48,9 @@ export const crawlAndSaveComments = catchAsync(
                 break;
             }
             const extractedComments = extractComments(data);
-            comments.push(...extractedComments.filter((item: typeof Array) => item && item.length > 0));
+            comments.push(
+                ...extractedComments.filter((item: typeof Array) => item && item.length > 0)
+            );
         }
 
         const fileId = uuidv4();
@@ -74,7 +76,11 @@ const extractComments = (data: any) => {
 };
 
 const saveCommentsToCSV = (comments: string[], filePath: string) => {
-    const csvContent = comments.map((item: string) => `"${item}"`).join("\n");
+    const cleanedComments = comments
+        .map((item: string) => (item && item.length > 0 ? item[0] : ""))
+        .map((item: string) => item.replace(/["\n]/g, ""));
+
+    const csvContent = cleanedComments.map((item: string) => `"${item}"`).join("\n");
     fs.writeFileSync(filePath, csvContent);
 
     setTimeout(() => {
