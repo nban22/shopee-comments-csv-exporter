@@ -19,7 +19,6 @@ app.use('/api/v1/crawl', crawlRoute);
 
 app.use('/', viewRouter);
 
-
 app.use('*', errorController.routesNotFound);
 
 app.use(errorController.globalErrorHandler);

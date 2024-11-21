@@ -25,50 +25,47 @@ export const extractShopAndItemId = catchAsync(
     }
 );
 
-export const crawlAndSaveComments = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const { shopId, itemId } = req.body;
+export const crawlAndSaveComments = catchAsync(
+    async (req: Request, res: Response, next: NextFunction) => {
+        const { shopId, itemId } = req.body;
 
-    const url = `https://shopee.vn/api/v2/item/get_ratings?exclude_filter=1&filter=0&filter_size=0&flag=1&fold_filter=0&itemid=${itemId}&limit=50&offset=1&relevant_reviews=false&request_source=2&shopid=${shopId}&tag_filter=&type=0&variation_filters=`;
+        const limit = 50;
+        let offset = 0;
 
-    const headers = {
-        "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-        Accept: "application/json, text/plain, */*",
-        "Accept-Language": "en-US,en;q=0.9",
-        Connection: "keep-alive",
-        "Upgrade-Insecure-Requests": "1",
-        "Sec-Fetch-Dest": "empty",
-        "Sec-Fetch-Mode": "cors",
-        "Sec-Fetch-Site": "same-origin",
-    };
+        let data = await commentsFectched(limit, offset, shopId, itemId);
+ 
+        const totalComments = data?.data?.item_rating_summary?.rating_total;
+        if (!totalComments) {
+            return next(new AppError(400, "No comments found"));
+        }
 
-    const response = await fetch(url, { headers });
-    if (!response.ok) {
-        return next(new AppError(400, "Error fetching data from Shopee"));
+        const comments = [];
+
+        for (let i = 0; i < totalComments; i += limit) {
+            data = await commentsFectched(limit, i, shopId, itemId);
+
+            if (!data || !data?.data?.ratings) {
+                break;
+            }
+            const extractedComments = extractComments(data);
+            comments.push(...extractedComments.filter((item: typeof Array) => item && item.length > 0));
+        }
+
+        const fileId = uuidv4();
+        const fileName = `comments-${fileId}.csv`;
+        const filePath = path.join("tmp", fileName);
+
+        saveCommentsToCSV(comments, filePath);
+
+        res.status(200).json({
+            status: "success",
+            message: "Comments crawled successfully",
+            data: {
+                fileUrl: `/api/v1/crawl/download/${fileId}`,
+            },
+        });
     }
-
-    const data = await response.json();
-    if (data.error) {
-        return next(new AppError(400, "Error in response data"));
-    }
-
-    const comments = extractComments(data);
-
-    const fileId = uuidv4();
-    const fileName = `comments-${fileId}.csv`;
-    const filePath = path.join("tmp", fileName);
-
-
-
-    saveCommentsToCSV(comments, filePath);
-
-    res.status(200).json({
-        status: "success",
-        data: {
-            fileUrl: `/api/v1/crawl/download/${fileId}`,
-        },
-    });
-});
+);
 
 const extractComments = (data: any) => {
     return data.data.ratings.map((item: any) =>
@@ -81,24 +78,54 @@ const saveCommentsToCSV = (comments: string[], filePath: string) => {
     fs.writeFileSync(filePath, csvContent);
 
     setTimeout(() => {
-        fs.unlinkSync(filePath);
-    }, 5 * 60 * 1000);
-}
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+        }
+    }, 1 * 60 * 1000);
+};
 
-export const downloadCommentsFile = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const { fileId } = req.params;
-    const fileName = `comments-${fileId}.csv`;
-    const filePath = path.join("tmp", fileName);
+export const downloadCommentsFile = catchAsync(
+    async (req: Request, res: Response, next: NextFunction) => {
+        const { fileId } = req.params;
+        const fileName = `comments-${fileId}.csv`;
+        const filePath = path.join("tmp", fileName);
 
-    if (!fs.existsSync(filePath)) {
-        return next(new AppError(404, "File not found"));
-    }
-
-    res.download(filePath, (err: any) => {
-        if (err) {
-            return next(err);
+        if (!fs.existsSync(filePath)) {
+            return next(new AppError(404, "File not found"));
         }
 
-        fs.unlinkSync(filePath);
-    });
-});
+        res.download(filePath, (err: any) => {
+            if (err) {
+                return next(err);
+            }
+            if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath);
+            }
+        });
+    }
+);
+
+const commentsFectched = async (limit: number, offset: number, shopId: string, itemId: string) => {
+    const url = `https://shopee.vn/api/v2/item/get_ratings?exclude_filter=1&filter=0&filter_size=0&flag=1&fold_filter=0&itemid=${itemId}&limit=${limit}&offset=${offset}&relevant_reviews=false&request_source=2&shopid=${shopId}&tag_filter=&type=0&variation_filters=`;
+
+    const headers = {
+        "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+        Accept: "application/json, text/plain, */*",
+        "Accept-Language": "en-US,en;q=0.9",
+        Connection: "keep-alive",
+        "Upgrade-Insecure-Requests": "1",
+        "Sec-Fetch-Dest": "empty",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Site": "same-origin",
+    };
+    const response = await fetch(url, { headers });
+    if (!response.ok) {
+        return null;
+    }
+    const data = await response.json();
+    if (data.error) {
+        return null;
+    }
+    return data;
+};
